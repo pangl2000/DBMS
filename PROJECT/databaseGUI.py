@@ -1,27 +1,134 @@
 import sqlite3
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk    
 
 class SportsDatabaseGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Sports Database Management")
+        self.login_frame()
 
-        self.home_page()
+    def login_frame(self):
+        login_frame = tk.Frame(self.root)
+        login_frame.pack(padx=20, pady=20)
 
-    def home_page(self):
+        tk.Label(login_frame, text="Login/Sign-up").pack(pady=10)
+
+        tk.Label(login_frame, text="Username").pack()
+        username_entry = tk.Entry(login_frame)
+        username_entry.pack()
+
+        tk.Label(login_frame, text="Password").pack()
+        password_entry = tk.Entry(login_frame, show="*")
+        password_entry.pack()
+
+        login_button = tk.Button(login_frame, text="Login", command=lambda: self.login(username_entry.get(), password_entry.get()))
+        login_button.pack(pady=10)
+
+        signup_button = tk.Button(login_frame, text="Sign Up", command=self.signup)
+        signup_button.pack(pady=10)
+
+    def login(self, username, password):
+        # Add code to validate user credentials
+        # For simplicity, using predefined admin credentials
+        if username == "admin" and password == "adminpassword":
+            self.admin_home_page()
+        else:
+            self.user_home_page()
+
+    def signup(self):
+        # Add code for user registration
+        # You can implement a new window or a dialog for user registration
+        # For simplicity, let's assume the user is already registered
+        self.user_home_page()
+
+    def user_home_page(self):
         self.clear_screen()
 
         home_frame = tk.Frame(self.root)
         home_frame.pack(padx=20, pady=20)
 
-        tk.Label(home_frame, text="Welcome to Sports Database Management").pack(pady=10)
+        tk.Label(home_frame, text="Welcome to Local Championship").pack(pady=10)
 
-        view_button = tk.Button(home_frame, text="View", command=self.view_data)
+        # Add buttons for pages Alpha and Beta
+        alpha_button = tk.Button(home_frame, text="Team Ranking", command=self.user_page_alpha)
+        alpha_button.pack(pady=10)
+
+        beta_button = tk.Button(home_frame, text="Player Ranking", command=self.user_page_beta)
+        beta_button.pack(pady=10)
+
+    def admin_home_page(self):
+        self.clear_screen()
+
+        home_frame = tk.Frame(self.root)
+        home_frame.pack(padx=20, pady=20)
+
+        tk.Label(home_frame, text="Welcome to Local Championship Database Management").pack(pady=10)
+
+        # Add buttons for pages Alpha and Beta
+        alpha_button = tk.Button(home_frame, text="Team Ranking", command=self.page_alpha)
+        alpha_button.pack(pady=10)
+
+        beta_button = tk.Button(home_frame, text="Player Ranking", command=self.page_beta)
+        beta_button.pack(pady=10)
+
+        view_button = tk.Button(home_frame, text="View data from DB", command=self.view_data)
         view_button.pack(pady=10)
 
-        insert_button = tk.Button(home_frame, text="Insert", command=self.insert_data)
+        insert_button = tk.Button(home_frame, text="Insert data to DB", command=self.insert_data)
         insert_button.pack(pady=10)
+
+    def user_page_alpha(self):
+        self.clear_screen()
+
+        page_alpha_frame = tk.Frame(self.root)
+        page_alpha_frame.pack(padx=20, pady=20)
+
+        tk.Label(page_alpha_frame, text="Team Ranking based on Goals Scored").pack(pady=10)
+
+        # Add code to fetch and display team ranking based on goals scored from the database
+
+        back_button = tk.Button(page_alpha_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
+    def user_page_beta(self):
+        self.clear_screen()
+
+        page_beta_frame = tk.Frame(self.root)
+        page_beta_frame.pack(padx=20, pady=20)
+
+        tk.Label(page_beta_frame, text="Player Ranking based on Goals Scored").pack(pady=10)
+
+        # Add code to fetch and display player ranking based on goals scored from the database
+
+        back_button = tk.Button(page_beta_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
+    def page_alpha(self):
+        self.clear_screen()
+
+        page_alpha_frame = tk.Frame(self.root)
+        page_alpha_frame.pack(padx=20, pady=20)
+
+        tk.Label(page_alpha_frame, text="Team Ranking based on Goals Scored").pack(pady=10)
+
+        # Add code to fetch and display team ranking based on goals scored from the database
+
+        back_button = tk.Button(page_alpha_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
+
+    def page_beta(self):
+        self.clear_screen()
+
+        page_beta_frame = tk.Frame(self.root)
+        page_beta_frame.pack(padx=20, pady=20)
+
+        tk.Label(page_beta_frame, text="Player Ranking based on Goals Scored").pack(pady=10)
+
+        # Add code to fetch and display player ranking based on goals scored from the database
+
+        back_button = tk.Button(page_beta_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
 
     def view_data(self):
         self.clear_screen()
@@ -42,7 +149,7 @@ class SportsDatabaseGUI:
         insert_button = tk.Button(view_frame, text="View", command=lambda: self.view_entity_data(view_frame, entity_var.get()))
         insert_button.pack(pady=10)
 
-        back_button = tk.Button(view_frame, text="Back", command=self.home_page)
+        back_button = tk.Button(view_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
 
     def insert_data(self):
@@ -62,7 +169,7 @@ class SportsDatabaseGUI:
         insert_button = tk.Button(insert_frame, text="Insert", command=lambda: self.show_fields(insert_frame, entity_var.get()))
         insert_button.pack(pady=10)
 
-        back_button = tk.Button(insert_frame, text="Back", command=self.home_page)
+        back_button = tk.Button(insert_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
 
     def show_fields(self, frame, entity):
@@ -137,7 +244,7 @@ class SportsDatabaseGUI:
         cursor.execute(f"INSERT INTO {entity} ({', '.join(entity_fields)}) VALUES {values_placeholder}", values)
         conn.commit()
 
-        home_button = tk.Button(new_frame, text="Home", command=self.home_page)
+        home_button = tk.Button(new_frame, text="Home", command=self.admin_home_page)
         home_button.pack(pady=10)
 
     def clear_screen(self):
@@ -155,17 +262,23 @@ class SportsDatabaseGUI:
         cursor.execute(f"SELECT * FROM {entity}")
         data = cursor.fetchall()
 
-        # Display data in a listbox with scrollbar
-        listbox = tk.Listbox(fields_frame, selectmode=tk.SINGLE)
-        scrollbar = tk.Scrollbar(fields_frame, orient=tk.VERTICAL, command=listbox.yview)
-        listbox.config(yscrollcommand=scrollbar.set)
+        # Create labels for the field names at the top
+        entity_fields = self.get_entity_fields(entity)
+        # Create a Treeview widget
+        # Create a Treeview widget
+        tree = ttk.Treeview(fields_frame, columns=entity_fields, show="headings")
 
+        # Set up columns
+        for field in entity_fields:
+            tree.heading(field, text=field)
+            tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Insert data rows
         for row in data:
-            formatted_row = ', '.join(str(value) if value is not None else "None" for value in row)
-            listbox.insert(tk.END, formatted_row)
-        
-        listbox.pack(side=tk.LEFT, fill=tk.BOTH)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+            tree.insert("", "end", values=row)
+
+        # Add the Treeview to the frame
+        tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(fields_frame, text="Back", command=lambda: self.view_data())
         back_button.pack(pady=10)
@@ -176,10 +289,6 @@ if __name__ == "__main__":
     cursor = conn.cursor()  
 
     root = tk.Tk()
-    root.geometry("800x600")  # Set a larger size for the window
+    root.geometry("1400x600")  # Set a larger size for the window
     app = SportsDatabaseGUI(root)
     root.mainloop()
-
-    
-
-
