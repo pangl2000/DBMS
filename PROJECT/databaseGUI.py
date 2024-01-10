@@ -82,30 +82,63 @@ class SportsDatabaseGUI:
             tk.Label(fields_frame, text=field).pack()
             entry = tk.Entry(fields_frame)
             entry.pack()
-            entries.append()
+            entries.append(entry)
 
-        cursor.execute("INSERT INTO {} {} VALUES {}".format(entity, entity_fields, entries))
-        conn.commit()
-
-        insert_button = tk.Button(fields_frame, text="Insert", command=lambda: self.insert_entity_data(entity))
+        insert_button = tk.Button(fields_frame, text="Insert", command=lambda: self.insert_callback(
+                                                                                                    entries, 
+                                                                                                    fields_frame,
+                                                                                                    entity, 
+                                                                                                    entity_fields, 
+                                                                                                    ))
         insert_button.pack(pady=10)
 
         back_button = tk.Button(fields_frame, text="Back", command=lambda: self.insert_data())
         back_button.pack(pady=10)
 
+    # Callback function to retrieve entry values when the "Insert" button is clicked
+    def insert_callback(self, entries, fields_frame, entity, entity_fields):
+        values = [entry.get() for entry in entries]
+        self.insert_entity_data(fields_frame, entity, entity_fields, values)
+
     def get_entity_fields(self, entity):
         # Add code to retrieve the fields of the selected entity from the database or another source
         # For simplicity, using predefined fields for each entity here
         entity_fields_dict = {
-            "Court": ["CourtName", "Capacity", "Location"],
-            "Championship": ["ChampionshipName", "StartDate", "EndDate", "Description"],
+            "Court": ["courtID", "CourtName", "Capacity", "Location"],
+            "Championship": ["ChampionshipID", "ChampionshipName", "StartDate", "EndDate", "Description"],
+            "Team": ["TeamID", "TeamName", "TeamFoundedDate", "TeamCoachFname", "TeamCoachLname", "CourtOwnedID", "ChampionshipID"],
+            "Referee": ["RefereeID", "FirstName", "LastName", "Experience"],
+            "Match": ["MatchID", "Date", "Time", "CourtID"],
+            "Plays": ["HomeTeamID", "GuestTeamID", "MatchID"],
+            "Includes": ["ChampionshipID", "MatchID"],
+            "Referees": ["RefereeID", "MatchID"],
+            "Player": ["PlayerID", "FirstName", "LastName", "DateOfBirth", "Nationality", "Height", "Weight", "Position", "TeamID", "JerseyNumber", "MatchID"],
+            "PlayerStats": ["PlayerID", "MatchID", "MinutesPlayed", "RedCards", "YellowCards", "GoalsScored", "Shots", "ShotsOnTarget", "Passes", "Assists", "Offsides", "Tackles"],
+            "Position": ["PlayerID", "Position"]
             # Add fields for other entities
         }
         return entity_fields_dict.get(entity, [])
 
-    def insert_entity_data(self, entity):
+    def insert_entity_data(self, frame, entity, entity_fields, values):
+        frame.destroy()
+        
+        new_frame = tk.Frame(self.root)
+        new_frame.pack(padx=20, pady=20)
+
+        tk.Label(new_frame, text=f"Inserting data for {entity}").pack(pady=10)
         # Add code to retrieve data from entry fields and insert into the database
-        print(f"Inserting data for {entity}")
+        # Extract values from entry widgets
+        
+
+        # Create a placeholder string for SQL VALUES clause
+        values_placeholder = "(" + ", ".join(["?" for _ in values]) + ")"
+
+        # Execute the SQL INSERT statement
+        cursor.execute(f"INSERT INTO {entity} ({', '.join(entity_fields)}) VALUES {values_placeholder}", values)
+        conn.commit()
+
+        home_button = tk.Button(new_frame, text="Home", command=self.home_page)
+        home_button.pack(pady=10)
 
     def clear_screen(self):
         for widget in self.root.winfo_children():
@@ -122,11 +155,17 @@ class SportsDatabaseGUI:
         cursor.execute(f"SELECT * FROM {entity}")
         data = cursor.fetchall()
 
-        # Display data in a listbox
-        listbox = tk.Listbox(root)
+        # Display data in a listbox with scrollbar
+        listbox = tk.Listbox(fields_frame, selectmode=tk.SINGLE)
+        scrollbar = tk.Scrollbar(fields_frame, orient=tk.VERTICAL, command=listbox.yview)
+        listbox.config(yscrollcommand=scrollbar.set)
+
         for row in data:
-            listbox.insert(tk.END, row)
-        listbox.pack()
+            formatted_row = ', '.join(str(value) if value is not None else "None" for value in row)
+            listbox.insert(tk.END, formatted_row)
+        
+        listbox.pack(side=tk.LEFT, fill=tk.BOTH)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         back_button = tk.Button(fields_frame, text="Back", command=lambda: self.view_data())
         back_button.pack(pady=10)
