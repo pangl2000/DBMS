@@ -150,12 +150,74 @@ class SportsDatabaseGUI:
                             ps.GoalsScored DESC;")
 
         data = cursor.fetchall()
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(page_beta_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        # Create a canvas to add a scrollbar
+        canvas = tk.Canvas(scrollable_frame, height=300, width=400)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        column_names = ["Name", "Team", "Goals Scored", "View Stats"]
+        for col, name in enumerate(column_names):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            player_id = row[0]
+            player_info = f"{row[1]} {row[2]}"
+            label = tk.Label(inner_frame, text=player_info)
+            label.grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+
+            team_label = tk.Label(inner_frame, text=row[3])
+            team_label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            goals_label = tk.Label(inner_frame, text=row[4])
+            goals_label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id: self.user_show_player_details(pid, 
+                                                                                                                           player_info))
+            button.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+        back_button = tk.Button(page_beta_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+
+    def user_show_player_details(self, player_id, player_info):
+        # Add code to show details of the selected player based on the player_id
+        self.clear_screen()
+
+        player_stats_frame = tk.Frame(self.root)
+        player_stats_frame.pack(padx=20, pady=20)
+
+        tk.Label(player_stats_frame, text=f"Stats of player {player_info}").pack(pady=10)
+        # Add code to fetch and display team ranking based on goals scored from the database
+
+        cursor.execute(f"SELECT * \
+                        FROM \
+                            PlayerStats p \
+                        WHERE \
+                            p.PlayerID = {player_id}"
+                       )
+        
+        data = cursor.fetchall()
         # Create a Treeview widget
-        tree = ttk.Treeview(page_beta_frame, columns=["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"],
-                             show="headings")
+        entity_fields = self.get_entity_fields("PlayerStats")
+        tree = ttk.Treeview(player_stats_frame, columns=entity_fields, show="headings")
 
         # Set up columns
-        for field in ["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"]:
+        for field in entity_fields:
             tree.heading(field, text=field)
             tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
 
@@ -166,8 +228,9 @@ class SportsDatabaseGUI:
         # Add the Treeview to the frame
         tree.pack(side=tk.TOP, fill=tk.BOTH)
 
-        back_button = tk.Button(page_beta_frame, text="Back", command=self.user_home_page)
+        back_button = tk.Button(player_stats_frame, text="Back", command=self.user_page_beta)
         back_button.pack(pady=10)
+        
 
     def admin_page_alpha(self):
         self.clear_screen()
@@ -224,7 +287,7 @@ class SportsDatabaseGUI:
         page_beta_frame.pack(padx=20, pady=20)
 
         tk.Label(page_beta_frame, text="Player Ranking based on Goals Scored").pack(pady=10)
-        
+
         # Add code to fetch and display player ranking based on goals scored from the database
         cursor.execute("SELECT \
                             p.PlayerID, \
@@ -242,12 +305,79 @@ class SportsDatabaseGUI:
                             ps.GoalsScored DESC;")
 
         data = cursor.fetchall()
+        
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(page_beta_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        # Create a canvas to add a scrollbar
+        canvas = tk.Canvas(scrollable_frame, height=300, width=400)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        column_names = ["Name", "Team", "Goals Scored", "View Stats"]
+        for col, name in enumerate(column_names):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            player_id = row[0]
+            player_info = f"{row[1]} {row[2]}"
+            label = tk.Label(inner_frame, text=player_info)
+            label.grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+
+            team_label = tk.Label(inner_frame, text=row[3])
+            team_label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            goals_label = tk.Label(inner_frame, text=row[4])
+            goals_label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id: self.admin_show_player_details(pid, 
+                                                                                                                            player_info))
+            button.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+        back_button = tk.Button(page_beta_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+
+    def on_mousewheel(self, event, canvas):
+        # Enable scrolling with the mouse wheel
+        canvas.yview_scroll(-1 * (event.delta // 120), "units")
+
+    def admin_show_player_details(self, player_id, player_info):
+         # Add code to show details of the selected player based on the player_id
+        self.clear_screen()
+
+        player_stats_frame = tk.Frame(self.root)
+        player_stats_frame.pack(padx=20, pady=20)
+
+        tk.Label(player_stats_frame, text=f"Stats of player {player_info}").pack(pady=10)
+        # Add code to fetch and display team ranking based on goals scored from the database
+
+        cursor.execute(f"SELECT * \
+                        FROM \
+                            PlayerStats p \
+                        WHERE \
+                            p.PlayerID = {player_id}"
+                       )
+        
+        data = cursor.fetchall()
         # Create a Treeview widget
-        tree = ttk.Treeview(page_beta_frame, columns=["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"],
-                             show="headings")
+        entity_fields = self.get_entity_fields("PlayerStats")
+        tree = ttk.Treeview(player_stats_frame, columns=entity_fields, show="headings")
 
         # Set up columns
-        for field in ["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"]:
+        for field in entity_fields:
             tree.heading(field, text=field)
             tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
 
@@ -258,7 +388,7 @@ class SportsDatabaseGUI:
         # Add the Treeview to the frame
         tree.pack(side=tk.TOP, fill=tk.BOTH)
 
-        back_button = tk.Button(page_beta_frame, text="Back", command=self.admin_home_page)
+        back_button = tk.Button(player_stats_frame, text="Back", command=self.admin_page_beta)
         back_button.pack(pady=10)
 
     def view_data(self):
