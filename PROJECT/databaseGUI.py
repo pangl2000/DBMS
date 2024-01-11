@@ -66,10 +66,10 @@ class SportsDatabaseGUI:
         tk.Label(home_frame, text="Welcome to Local Championship Database Management").pack(pady=10)
 
         # Add buttons for pages Alpha and Beta
-        alpha_button = tk.Button(home_frame, text="Team Ranking", command=self.page_alpha)
+        alpha_button = tk.Button(home_frame, text="Team Ranking", command=self.admin_page_alpha)
         alpha_button.pack(pady=10)
 
-        beta_button = tk.Button(home_frame, text="Player Ranking", command=self.page_beta)
+        beta_button = tk.Button(home_frame, text="Player Ranking", command=self.admin_page_beta)
         beta_button.pack(pady=10)
 
         view_button = tk.Button(home_frame, text="View data from DB", command=self.view_data)
@@ -85,8 +85,43 @@ class SportsDatabaseGUI:
         page_alpha_frame.pack(padx=20, pady=20)
 
         tk.Label(page_alpha_frame, text="Team Ranking based on Goals Scored").pack(pady=10)
-
         # Add code to fetch and display team ranking based on goals scored from the database
+
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        
+        data = cursor.fetchall()
+        # Create a Treeview widget
+        tree = ttk.Treeview(page_alpha_frame, columns=["TeamID","Team Name","Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID","Team Name","Goals Scored"]:
+            tree.heading(field, text=field)
+            tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Insert data rows
+        for row in data:
+            tree.insert("", "end", values=row)
+
+        # Add the Treeview to the frame
+        tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(page_alpha_frame, text="Back", command=self.user_home_page)
         back_button.pack(pady=10)
@@ -98,34 +133,130 @@ class SportsDatabaseGUI:
         page_beta_frame.pack(padx=20, pady=20)
 
         tk.Label(page_beta_frame, text="Player Ranking based on Goals Scored").pack(pady=10)
-
         # Add code to fetch and display player ranking based on goals scored from the database
+        cursor.execute("SELECT \
+                            p.PlayerID, \
+                            p.FirstName, \
+                            p.LastName, \
+                            t.TeamName, \
+                            ps.GoalsScored \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t ON p.TeamID = t.TeamID \
+                        JOIN \
+                            PlayerStats ps ON p.PlayerID = ps.PlayerID \
+                        ORDER BY \
+                            ps.GoalsScored DESC;")
+
+        data = cursor.fetchall()
+        # Create a Treeview widget
+        tree = ttk.Treeview(page_beta_frame, columns=["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"],
+                             show="headings")
+
+        # Set up columns
+        for field in ["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"]:
+            tree.heading(field, text=field)
+            tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Insert data rows
+        for row in data:
+            tree.insert("", "end", values=row)
+
+        # Add the Treeview to the frame
+        tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(page_beta_frame, text="Back", command=self.user_home_page)
         back_button.pack(pady=10)
 
-    def page_alpha(self):
+    def admin_page_alpha(self):
         self.clear_screen()
 
         page_alpha_frame = tk.Frame(self.root)
         page_alpha_frame.pack(padx=20, pady=20)
 
         tk.Label(page_alpha_frame, text="Team Ranking based on Goals Scored").pack(pady=10)
-
         # Add code to fetch and display team ranking based on goals scored from the database
+
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        
+        data = cursor.fetchall()
+        # Create a Treeview widget
+        tree = ttk.Treeview(page_alpha_frame, columns=["TeamID","Team Name","Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID","Team Name","Goals Scored"]:
+            tree.heading(field, text=field)
+            tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Insert data rows
+        for row in data:
+            tree.insert("", "end", values=row)
+
+        # Add the Treeview to the frame
+        tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(page_alpha_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
 
-    def page_beta(self):
+    def admin_page_beta(self):
         self.clear_screen()
 
         page_beta_frame = tk.Frame(self.root)
         page_beta_frame.pack(padx=20, pady=20)
 
         tk.Label(page_beta_frame, text="Player Ranking based on Goals Scored").pack(pady=10)
-
+        
         # Add code to fetch and display player ranking based on goals scored from the database
+        cursor.execute("SELECT \
+                            p.PlayerID, \
+                            p.FirstName, \
+                            p.LastName, \
+                            t.TeamName, \
+                            ps.GoalsScored \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t ON p.TeamID = t.TeamID \
+                        JOIN \
+                            PlayerStats ps ON p.PlayerID = ps.PlayerID \
+                        ORDER BY \
+                            ps.GoalsScored DESC;")
+
+        data = cursor.fetchall()
+        # Create a Treeview widget
+        tree = ttk.Treeview(page_beta_frame, columns=["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"],
+                             show="headings")
+
+        # Set up columns
+        for field in ["PlayerID", "First Name", "Last Name", "Team Name", "Goals Scored"]:
+            tree.heading(field, text=field)
+            tree.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Insert data rows
+        for row in data:
+            tree.insert("", "end", values=row)
+
+        # Add the Treeview to the frame
+        tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(page_beta_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
