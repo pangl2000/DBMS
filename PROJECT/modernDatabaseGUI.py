@@ -70,6 +70,13 @@ class SportsDatabaseGUI:
         beta_button = ttk.Button(home_frame, text="Player Ranking", command=self.user_page_beta)
         beta_button.pack(pady=10)
 
+        # New buttons for group stage and knockout stage
+        group_stage_button = ttk.Button(home_frame, text="Group Stage", command=self.user_page_group_stage)
+        group_stage_button.pack(pady=10)
+
+        knockout_stage_button = ttk.Button(home_frame, text="Knockout Stage", command=self.user_page_knockout_stage)
+        knockout_stage_button.pack(pady=10)
+
     def admin_home_page(self):
         self.clear_screen()
 
@@ -85,6 +92,12 @@ class SportsDatabaseGUI:
 
         beta_button = ttk.Button(home_frame, text="Player Ranking", command=self.admin_page_beta)
         beta_button.pack(pady=10)
+
+        group_stage_button = ttk.Button(home_frame, text="Group Stage", command=self.admin_page_group_stage)
+        group_stage_button.pack(pady=10)
+
+        knockout_stage_button = ttk.Button(home_frame, text="Knockout Stage", command=self.admin_page_knockout_stage)
+        knockout_stage_button.pack(pady=10)
 
         view_button = ttk.Button(home_frame, text="View data from DB", command=self.view_data)
         view_button.pack(pady=10)
@@ -156,23 +169,26 @@ class SportsDatabaseGUI:
                             p.FirstName, \
                             p.LastName, \
                             t.TeamName, \
-                            ps.GoalsScored \
+                            pss.GOALS \
                         FROM \
-                            Player p \
+                            Player as p \
                         JOIN \
-                            Team t ON p.TeamID = t.TeamID \
+                            Team as t ON p.TeamID = t.TeamID \
                         JOIN \
-                            PlayerStats ps ON p.PlayerID = ps.PlayerID \
+                            ( \
+                            SELECT SUM(ps.GoalsScored) as GOALS, ps.PlayerID \
+                            FROM PlayerStats as ps \
+                            GROUP BY ps.playerID \
+                            ) as pss on pss.PlayerID = p.PlayerID \
                         ORDER BY \
-                            ps.GoalsScored DESC;")
+                            pss.GOALS DESC;")
 
         data = cursor.fetchall()
         # Create a scrollable frame
         scrollable_frame = tk.Frame(page_beta_frame)
         scrollable_frame.pack(side=tk.TOP, padx=10)
 
-        # Create a canvas to add a scrollbar
-        canvas = tk.Canvas(scrollable_frame, height=300, width=400)
+        canvas = tk.Canvas(scrollable_frame, width=400)
         canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
 
         scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
@@ -210,6 +226,10 @@ class SportsDatabaseGUI:
 
         # Bind the canvas to the mousewheel for scrolling
         canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
 
     def user_show_player_details(self, player_id, player_info):
         # Add code to show details of the selected player based on the player_id
@@ -248,6 +268,36 @@ class SportsDatabaseGUI:
         tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(player_stats_frame, text="Back", command=self.user_page_beta)
+        back_button.pack(pady=10)
+
+    def user_page_group_stage(self):
+        self.clear_screen()
+
+        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        group_stage_frame.pack_propagate(False)
+        group_stage_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
+
+        # Add code for group stage information display
+
+        back_button = tk.Button(group_stage_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
+    def user_page_knockout_stage(self):
+        self.clear_screen()
+
+        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        knockout_stage_frame.pack_propagate(False)
+        knockout_stage_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
+
+        # Add code for knockout stage information display
+
+        back_button = tk.Button(knockout_stage_frame, text="Back", command=self.user_home_page)
         back_button.pack(pady=10)
 
     def admin_page_alpha(self):
@@ -315,15 +365,19 @@ class SportsDatabaseGUI:
                             p.FirstName, \
                             p.LastName, \
                             t.TeamName, \
-                            ps.GoalsScored \
+                            pss.GOALS \
                         FROM \
-                            Player p \
+                            Player as p \
                         JOIN \
-                            Team t ON p.TeamID = t.TeamID \
+                            Team as t ON p.TeamID = t.TeamID \
                         JOIN \
-                            PlayerStats ps ON p.PlayerID = ps.PlayerID \
+                            ( \
+                            SELECT SUM(ps.GoalsScored) as GOALS, ps.PlayerID \
+                            FROM PlayerStats as ps \
+                            GROUP BY ps.playerID \
+                            ) as pss on pss.PlayerID = p.PlayerID \
                         ORDER BY \
-                            ps.GoalsScored DESC;")
+                            pss.GOALS DESC;")
 
         data = cursor.fetchall()
         
@@ -331,8 +385,7 @@ class SportsDatabaseGUI:
         scrollable_frame = tk.Frame(page_beta_frame)
         scrollable_frame.pack(side=tk.TOP, padx=10)
 
-        # Create a canvas to add a scrollbar
-        canvas = tk.Canvas(scrollable_frame, height=300, width=400)
+        canvas = tk.Canvas(scrollable_frame, width=400)
         canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
 
         scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
@@ -370,6 +423,12 @@ class SportsDatabaseGUI:
 
         # Bind the canvas to the mousewheel for scrolling
         canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+    def update_scrollregion(self, event, canvas):
+        canvas.configure(scrollregion=canvas.bbox("all"))
 
     def on_mousewheel(self, event, canvas):
         # Enable scrolling with the mouse wheel
@@ -412,6 +471,36 @@ class SportsDatabaseGUI:
         tree.pack(side=tk.TOP, fill=tk.BOTH)
 
         back_button = tk.Button(player_stats_frame, text="Back", command=self.admin_page_beta)
+        back_button.pack(pady=10)
+
+    def admin_page_group_stage(self):
+        self.clear_screen()
+
+        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        group_stage_frame.pack_propagate(False)
+        group_stage_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
+
+        # Add code for group stage information display
+
+        back_button = tk.Button(group_stage_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
+
+    def admin_page_knockout_stage(self):
+        self.clear_screen()
+
+        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        knockout_stage_frame.pack_propagate(False)
+        knockout_stage_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
+
+        # Add code for knockout stage information display
+
+        back_button = tk.Button(knockout_stage_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
 
     def view_data(self):

@@ -42,6 +42,7 @@ CREATE TABLE Match (
     Date DATE,
     Time TIME,
     CourtID INT,
+    Phase VARCHAR(255),
     FOREIGN KEY (CourtID) REFERENCES Court(courtID)
 );
 
