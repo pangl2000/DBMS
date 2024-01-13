@@ -2,20 +2,21 @@ import sqlite3
 import tkinter as tk
 from tkinter import ttk
 
+
 class SportsDatabaseGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Sports Database Management")
         self.style = ttk.Style()
         self.style.theme_use("clam")  # Use the clam theme for a modern look
-        self.root.geometry("1400x600")  # Set window size
+        self.root.geometry("1400x800")  # Set window size
         self.login_frame()
 
     def set_style(self, widget, background, foreground, font_size=10):
         self.style.configure(widget, background=background, foreground=foreground, font=("Helvetica", font_size, "bold"))
 
     def login_frame(self):
-        login_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        login_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         login_frame.pack_propagate(False)
         login_frame.pack(padx=20, pady=20)
 
@@ -56,7 +57,7 @@ class SportsDatabaseGUI:
     def user_home_page(self):
         self.clear_screen()
 
-        home_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        home_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         home_frame.pack_propagate(False)
         home_frame.pack(padx=20, pady=20)
 
@@ -80,7 +81,7 @@ class SportsDatabaseGUI:
     def admin_home_page(self):
         self.clear_screen()
 
-        home_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        home_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         home_frame.pack_propagate(False)
         home_frame.pack(padx=20, pady=20)
 
@@ -108,7 +109,7 @@ class SportsDatabaseGUI:
     def user_page_alpha(self):
         self.clear_screen()
 
-        page_alpha_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        page_alpha_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         page_alpha_frame.pack_propagate(False)
         page_alpha_frame.pack(padx=20, pady=20)
 
@@ -157,7 +158,7 @@ class SportsDatabaseGUI:
     def user_page_beta(self):
         self.clear_screen()
 
-        page_beta_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        page_beta_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         page_beta_frame.pack_propagate(False)
         page_beta_frame.pack(padx=20, pady=20)
 
@@ -235,7 +236,7 @@ class SportsDatabaseGUI:
         # Add code to show details of the selected player based on the player_id
         self.clear_screen()
 
-        player_stats_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        player_stats_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         player_stats_frame.pack_propagate(False)
         player_stats_frame.pack(padx=20, pady=20)
 
@@ -273,14 +274,103 @@ class SportsDatabaseGUI:
     def user_page_group_stage(self):
         self.clear_screen()
 
-        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         group_stage_frame.pack_propagate(False)
         group_stage_frame.pack(padx=20, pady=20)
 
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
 
-        # Add code for group stage information display
+        # First Treeview
+        tree1_frame = tk.Frame(group_stage_frame)
+        tree1_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree1_frame, text="Group A").pack()
+        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID", "Team Name", "Goals Scored"]:
+            tree1.heading(field, text=field)
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the first tree
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group A' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        data1 = cursor.fetchall()
+        for row in data1:
+            tree1.insert("", "end", values=row)
+
+        # Add the first Treeview to the frame
+        tree1.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        # Second Treeview
+        tree2_frame = tk.Frame(group_stage_frame)
+        tree2_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree2_frame, text="Goup B").pack()
+        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID", "Team Name", "Goals Scored"]:
+            tree2.heading(field, text=field)
+            tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the second tree
+        # Add your second SQL query to fetch different data if needed
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group B' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        data2 = cursor.fetchall()
+        for row in data2:
+            tree2.insert("", "end", values=row)
+
+        # Add the second Treeview to the frame
+        tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
 
         back_button = tk.Button(group_stage_frame, text="Back", command=self.user_home_page)
         back_button.pack(pady=10)
@@ -288,14 +378,110 @@ class SportsDatabaseGUI:
     def user_page_knockout_stage(self):
         self.clear_screen()
 
-        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         knockout_stage_frame.pack_propagate(False)
         knockout_stage_frame.pack(padx=20, pady=20)
 
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
 
-        # Add code for knockout stage information display
+        cursor.execute("SELECT TeamName \
+                       FROM \
+                       (SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group A' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC)" \
+                       )
+        data1 = cursor.fetchall()
+
+        cursor.execute("SELECT TeamName \
+                       FROM \
+                       (SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group B' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC)" \
+                       )
+        data2 = cursor.fetchall()
+
+        knockoutsTeams = []
+        knockoutsTeams.append(data1[0][0])
+        knockoutsTeams.append(data2[1][0])
+        knockoutsTeams.append(data2[0][0])
+        knockoutsTeams.append(data1[1][0])
+
+        # Display the bracket
+        bracket_canvas = tk.Canvas(knockout_stage_frame, width=800, height=400, bg="white")
+        bracket_canvas.pack(pady=10)
+
+        # Draw the bracket lines
+        bracket_canvas.create_line(150, 75, 350, 75, fill="black", width=2)  # Horizontal line (1a)
+        bracket_canvas.create_line(150, 150, 350, 150, fill="black", width=2)  # Horizontal line (2a)
+        bracket_canvas.create_line(150, 225, 350, 225, fill="black", width=2)  # Horizontal line (3a)
+        bracket_canvas.create_line(150, 300, 350, 300, fill="black", width=2)  # Horizontal line (4a)
+
+        # Draw the connecting lines for each round
+        bracket_canvas.create_line(350, 75, 350, 150, fill="black", width=2)
+        bracket_canvas.create_line(350, 225, 350, 300, fill="black", width=2)
+
+        bracket_canvas.create_line(350, 112.5, 550, 112.5, fill="black", width=2) # Horizontal (1b)
+        bracket_canvas.create_line(350, 262.5, 550, 262.5, fill="black", width=2) # Horizontal (2b)
+
+        bracket_canvas.create_line(550, 112.5, 550, 262.5, fill="black", width=2)
+
+        bracket_canvas.create_line(550, 187.5, 750, 187.5, fill="black", width=2) # Horizontal (1c)
+
+        # Draw the team names
+        for i, team in enumerate(knockoutsTeams):
+            bracket_canvas.create_text(100, 75 + i * 75, text=str(i+1)+') '+team, font=("Helvetica", 12), anchor="e")
+
+        # Draw the team names
+        for i, team in enumerate(knockoutsTeams):
+            bracket_canvas.create_text(250, 65 + i * 75, text=team, font=("Helvetica", 12), anchor="e")
+
+        bracket_canvas.create_text(480, 102.5, text="Winner (1-2)", font=("Helvetica", 12), anchor="e")
+        bracket_canvas.create_text(480, 252.5, text="Winner (3-4)", font=("Helvetica", 12), anchor="e")
+
+        bracket_canvas.create_text(700, 177.5, text="Finals Winner", font=("Helvetica", 12), anchor="e")
 
         back_button = tk.Button(knockout_stage_frame, text="Back", command=self.user_home_page)
         back_button.pack(pady=10)
@@ -303,7 +489,7 @@ class SportsDatabaseGUI:
     def admin_page_alpha(self):
         self.clear_screen()
 
-        page_alpha_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        page_alpha_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         page_alpha_frame.pack_propagate(False)
         page_alpha_frame.pack(padx=20, pady=20)
 
@@ -353,7 +539,7 @@ class SportsDatabaseGUI:
     def admin_page_beta(self):
         self.clear_screen()
 
-        page_beta_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        page_beta_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         page_beta_frame.pack_propagate(False)
         page_beta_frame.pack(padx=20, pady=20)
 
@@ -438,7 +624,7 @@ class SportsDatabaseGUI:
         # Add code to show details of the selected player based on the player_id
         self.clear_screen()
 
-        player_stats_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        player_stats_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         player_stats_frame.pack_propagate(False)
         player_stats_frame.pack(padx=20, pady=20)
 
@@ -476,14 +662,103 @@ class SportsDatabaseGUI:
     def admin_page_group_stage(self):
         self.clear_screen()
 
-        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        group_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         group_stage_frame.pack_propagate(False)
         group_stage_frame.pack(padx=20, pady=20)
 
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
 
-        # Add code for group stage information display
+        # First Treeview
+        tree1_frame = tk.Frame(group_stage_frame)
+        tree1_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree1_frame, text="Group A").pack()
+        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID", "Team Name", "Goals Scored"]:
+            tree1.heading(field, text=field)
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the first tree
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group A' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        data1 = cursor.fetchall()
+        for row in data1:
+            tree1.insert("", "end", values=row)
+
+        # Add the first Treeview to the frame
+        tree1.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        # Second Treeview
+        tree2_frame = tk.Frame(group_stage_frame)
+        tree2_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree2_frame, text="Goup B").pack()
+        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+
+        # Set up columns
+        for field in ["TeamID", "Team Name", "Goals Scored"]:
+            tree2.heading(field, text=field)
+            tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the second tree
+        # Add your second SQL query to fetch different data if needed
+        cursor.execute("SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group B' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC" \
+                       )
+        data2 = cursor.fetchall()
+        for row in data2:
+            tree2.insert("", "end", values=row)
+
+        # Add the second Treeview to the frame
+        tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
 
         back_button = tk.Button(group_stage_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
@@ -491,14 +766,110 @@ class SportsDatabaseGUI:
     def admin_page_knockout_stage(self):
         self.clear_screen()
 
-        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        knockout_stage_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         knockout_stage_frame.pack_propagate(False)
         knockout_stage_frame.pack(padx=20, pady=20)
 
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
 
-        # Add code for knockout stage information display
+        cursor.execute("SELECT TeamName \
+                       FROM \
+                       (SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group A' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC)" \
+                       )
+        data1 = cursor.fetchall()
+
+        cursor.execute("SELECT TeamName \
+                       FROM \
+                       (SELECT \
+                            t.TeamID, \
+                            t.TeamName, \
+                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+                        FROM \
+                            Team t \
+                        JOIN \
+                            Player p \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            PlayerStats ps \
+                        ON \
+                            p.PlayerID = ps.PlayerID \
+                        JOIN \
+                            Match m \
+                        ON \
+                            m.MatchID = ps.MatchID \
+                        WHERE \
+                            m.Phase = 'Group B' \
+                        GROUP BY \
+                            t.TeamID, t.TeamName \
+                        ORDER BY \
+                            TotalGoalsScored DESC)" \
+                       )
+        data2 = cursor.fetchall()
+
+        knockoutsTeams = []
+        knockoutsTeams.append(data1[0][0])
+        knockoutsTeams.append(data2[1][0])
+        knockoutsTeams.append(data2[0][0])
+        knockoutsTeams.append(data1[1][0])
+        
+        # Display the bracket
+        bracket_canvas = tk.Canvas(knockout_stage_frame, width=800, height=400, bg="white")
+        bracket_canvas.pack(pady=10)
+
+        # Draw the bracket lines
+        bracket_canvas.create_line(150, 75, 350, 75, fill="black", width=2)  # Horizontal line (1a)
+        bracket_canvas.create_line(150, 150, 350, 150, fill="black", width=2)  # Horizontal line (2a)
+        bracket_canvas.create_line(150, 225, 350, 225, fill="black", width=2)  # Horizontal line (3a)
+        bracket_canvas.create_line(150, 300, 350, 300, fill="black", width=2)  # Horizontal line (4a)
+
+        # Draw the connecting lines for each round
+        bracket_canvas.create_line(350, 75, 350, 150, fill="black", width=2)
+        bracket_canvas.create_line(350, 225, 350, 300, fill="black", width=2)
+
+        bracket_canvas.create_line(350, 112.5, 550, 112.5, fill="black", width=2) # Horizontal (1b)
+        bracket_canvas.create_line(350, 262.5, 550, 262.5, fill="black", width=2) # Horizontal (2b)
+
+        bracket_canvas.create_line(550, 112.5, 550, 262.5, fill="black", width=2)
+
+        bracket_canvas.create_line(550, 187.5, 750, 187.5, fill="black", width=2) # Horizontal (1c)
+
+        # Draw the team names
+        for i, team in enumerate(knockoutsTeams):
+            bracket_canvas.create_text(100, 75 + i * 75, text=str(i+1)+') '+team, font=("Helvetica", 12), anchor="e")
+
+        # Draw the team names
+        for i, team in enumerate(knockoutsTeams):
+            bracket_canvas.create_text(250, 65 + i * 75, text=team, font=("Helvetica", 12), anchor="e")
+
+        bracket_canvas.create_text(480, 102.5, text="Winner (1-2)", font=("Helvetica", 12), anchor="e")
+        bracket_canvas.create_text(480, 252.5, text="Winner (3-4)", font=("Helvetica", 12), anchor="e")
+
+        bracket_canvas.create_text(700, 177.5, text="Finals Winner", font=("Helvetica", 12), anchor="e")
 
         back_button = tk.Button(knockout_stage_frame, text="Back", command=self.admin_home_page)
         back_button.pack(pady=10)
@@ -506,7 +877,7 @@ class SportsDatabaseGUI:
     def view_data(self):
         self.clear_screen()
 
-        view_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        view_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         view_frame.pack_propagate(False)
         view_frame.pack(padx=20, pady=20)
 
@@ -529,7 +900,7 @@ class SportsDatabaseGUI:
     def insert_data(self):
         self.clear_screen()
 
-        insert_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        insert_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         insert_frame.pack_propagate(False)
         insert_frame.pack(padx=20, pady=20)
 
@@ -551,7 +922,7 @@ class SportsDatabaseGUI:
     def show_fields(self, frame, entity):
         frame.destroy()
 
-        fields_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        fields_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         fields_frame.pack_propagate(False)
         fields_frame.pack(padx=20, pady=20)
 
@@ -607,7 +978,7 @@ class SportsDatabaseGUI:
     def insert_entity_data(self, frame, entity, entity_fields, values):
         frame.destroy()
         
-        new_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        new_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         new_frame.pack_propagate(False)
         new_frame.pack(padx=20, pady=20)
 
@@ -627,7 +998,7 @@ class SportsDatabaseGUI:
     def view_entity_data(self, frame, entity):
         frame.destroy()
 
-        fields_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=600)
+        fields_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
         fields_frame.pack_propagate(False)
         fields_frame.pack(padx=20, pady=20)
 
