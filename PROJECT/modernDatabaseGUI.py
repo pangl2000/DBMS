@@ -78,6 +78,135 @@ class SportsDatabaseGUI:
         knockout_stage_button = ttk.Button(home_frame, text="Knockout Stage", command=self.user_page_knockout_stage)
         knockout_stage_button.pack(pady=10)
 
+        cursor.execute("SELECT TeamID, TeamName\
+                        FROM Team")
+
+        data = cursor.fetchall()
+
+        ttk.Label(home_frame, text="TEAMS").pack()
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(home_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=250)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        column_names = ["Team ID", "Team", "View Players"]
+        for col, name in enumerate(column_names):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            team_id = row[0]
+            label = tk.Label(inner_frame, text=team_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            team_name = row[1]
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda tid=team_id,tname=team_name: self.user_show_players(
+                                                                                                                tid, tname))
+            button.grid(row=row_idx, column=2, padx=30, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+    def user_show_players(self, team_id, team_name):
+        # Add code to show details of the selected player based on the player_id
+        self.clear_screen()
+
+        players_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        players_frame.pack_propagate(False)
+        players_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(players_frame, text=f"Players of team {team_name}").pack(pady=10)
+
+        cursor.execute(f"SELECT * \
+                        FROM \
+                            Player p \
+                        WHERE \
+                            p.TeamID = {team_id}"
+                       )
+        
+        data = cursor.fetchall()
+
+        entity_fields = self.get_entity_fields("Player")
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(players_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=930)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        for col, name in enumerate(entity_fields):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            label = tk.Label(inner_frame, text=row[0])
+            label.grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+            
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[7])
+            label.grid(row=row_idx, column=7, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[8])
+            label.grid(row=row_idx, column=8, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[9])
+            label.grid(row=row_idx, column=9, padx=10, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+        back_button = tk.Button(players_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
     def admin_home_page(self):
         self.clear_screen()
 
@@ -99,12 +228,141 @@ class SportsDatabaseGUI:
 
         knockout_stage_button = ttk.Button(home_frame, text="Knockout Stage", command=self.admin_page_knockout_stage)
         knockout_stage_button.pack(pady=10)
+        
+        cursor.execute("SELECT TeamID, TeamName\
+                        FROM Team")
+
+        data = cursor.fetchall()
+
+        ttk.Label(home_frame, text="TEAMS").pack()
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(home_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=250)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        column_names = ["Team ID", "Team", "View Players"]
+        for col, name in enumerate(column_names):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            team_id = row[0]
+            label = tk.Label(inner_frame, text=team_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            team_name = row[1]
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda tid=team_id,tname=team_name: self.admin_show_players(
+                                                                                                                tid, tname))
+            button.grid(row=row_idx, column=2, padx=30, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
 
         view_button = ttk.Button(home_frame, text="View data from DB", command=self.view_data)
         view_button.pack(pady=10)
 
         insert_button = ttk.Button(home_frame, text="Insert data to DB", command=self.insert_data)
         insert_button.pack(pady=10)
+
+    def admin_show_players(self, team_id, team_name):
+        # Add code to show details of the selected player based on the player_id
+        self.clear_screen()
+
+        players_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        players_frame.pack_propagate(False)
+        players_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(players_frame, text=f"Players of team {team_name}").pack(pady=10)
+
+        cursor.execute(f"SELECT * \
+                        FROM \
+                            Player p \
+                        WHERE \
+                            p.TeamID = {team_id}"
+                       )
+        
+        data = cursor.fetchall()
+
+        entity_fields = self.get_entity_fields("Player")
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(players_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=930)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        for col, name in enumerate(entity_fields):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data, start=1):
+            label = tk.Label(inner_frame, text=row[0])
+            label.grid(row=row_idx, column=0, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+            
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[7])
+            label.grid(row=row_idx, column=7, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[8])
+            label.grid(row=row_idx, column=8, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[9])
+            label.grid(row=row_idx, column=9, padx=10, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+        back_button = tk.Button(players_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
 
     def user_page_alpha(self):
         self.clear_screen()
@@ -218,8 +476,9 @@ class SportsDatabaseGUI:
             goals_label = tk.Label(inner_frame, text=row[4])
             goals_label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
 
-            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id: self.user_show_player_details(pid, 
-                                                                                                                           player_info))
+            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id,pinfo=player_info: 
+                                                                                                self.user_show_player_details(pid, 
+                                                                                                                              pinfo))
             button.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
 
         back_button = tk.Button(page_beta_frame, text="Back", command=self.user_home_page)
@@ -279,6 +538,7 @@ class SportsDatabaseGUI:
         group_stage_frame.pack(padx=20, pady=20)
 
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        self.set_style("TButton", "#2ecc71", "white", 12)  # Larger button style
         ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
 
         # First Treeview
@@ -330,7 +590,7 @@ class SportsDatabaseGUI:
         tree2_frame = tk.Frame(group_stage_frame)
         tree2_frame.pack(side=tk.TOP, padx=10)
 
-        ttk.Label(tree2_frame, text="Goup B").pack()
+        ttk.Label(tree2_frame, text="Group B").pack()
         tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
 
         # Set up columns
@@ -372,7 +632,231 @@ class SportsDatabaseGUI:
         # Add the second Treeview to the frame
         tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
 
+        match_button = tk.Button(group_stage_frame, text="Matches", command=self.user_group_matches_page)
+        match_button.pack(pady=10)
+
         back_button = tk.Button(group_stage_frame, text="Back", command=self.user_home_page)
+        back_button.pack(pady=10)
+
+    def user_group_matches_page(self):
+        self.clear_screen()
+
+        match_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        match_frame.pack_propagate(False)
+        match_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(match_frame, text="Welcome to Local Championship").pack(pady=10)
+
+        cursor.execute("SELECT MatchID, Date, Time, CourtID, Phase, t.TeamName as HomeTeam, ts.TeamName as GuestTeam \
+                       FROM \
+                       (SELECT * \
+                       FROM \
+                       (SELECT *\
+                        FROM Match \
+                        WHERE Phase='Group A') as m \
+                        JOIN Plays as p \
+                        ON p.MatchID = m.MatchID) as pl\
+                       JOIN Team as t \
+                       ON t.TeamID = pl.HomeTeamID \
+                       JOIN Team as ts \
+                       ON ts.TeamID = pl.GuestTeamID")
+
+        data1 = cursor.fetchall()
+
+        cursor.execute("SELECT MatchID, Date, Time, CourtID, Phase, t.TeamName as HomeTeam, ts.TeamName as GuestTeam \
+                       FROM \
+                       (SELECT * \
+                       FROM \
+                       (SELECT *\
+                        FROM Match \
+                        WHERE Phase='Group B') as m \
+                        JOIN Plays as p \
+                        ON p.MatchID = m.MatchID) as pl\
+                       JOIN Team as t \
+                       ON t.TeamID = pl.HomeTeamID \
+                       JOIN Team as ts \
+                       ON ts.TeamID = pl.GuestTeamID")
+
+        data2 = cursor.fetchall()
+
+        ttk.Label(match_frame, text="Matches of Groups").pack()
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(match_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=700)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        entity_fields = self.get_entity_fields('Match')
+        entity_fields.append("Home Team")
+        entity_fields.append("Guest Team")
+        for col, name in enumerate(entity_fields):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data1, start=1):
+            match_id = row[0]
+            label = tk.Label(inner_frame, text=match_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda mid=match_id: self.user_show_players_in_match(mid))
+            button.grid(row=row_idx, column=7, padx=30, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data2, start=len(data1) + 1):
+            match_id = row[0]
+            label = tk.Label(inner_frame, text=match_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda mid=match_id: self.user_show_players_in_match(mid))
+            button.grid(row=row_idx, column=7, padx=30, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+        back_button = tk.Button(match_frame, text="Back", command=self.user_page_group_stage)
+        back_button.pack(pady=10)
+
+    def user_show_players_in_match(self, match_id):
+        self.clear_screen()
+
+        match_players_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        match_players_frame.pack_propagate(False)
+        match_players_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        self.set_style("TButton", "#2ecc71", "white", 12)  # Larger button style
+        ttk.Label(match_players_frame, text=f"Match {match_id}").pack(pady=10)
+
+        # First Treeview
+        tree1_frame = tk.Frame(match_players_frame)  # Set the height here
+        tree1_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree1_frame, text="Home Team").pack()
+        tree1 = ttk.Treeview(match_players_frame, height=11, columns=["First Name", "Last Name", "Position"], show="headings")
+
+        # Set up columns
+        for field in ["First Name", "Last Name", "Position"]:
+            tree1.heading(field, text=field)
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the first tree
+        cursor.execute(f"SELECT DISTINCT\
+                            p.FirstName, \
+                            p.LastName, \
+                            p.Position \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            Plays ps \
+                        ON \
+                            t.TeamID = ps.HomeTeamID \
+                        WHERE \
+                            ps.MatchID = {match_id}\
+                        ORDER BY \
+                            p.LastName,p.FirstName"
+                       )
+        data1 = cursor.fetchall()
+        for row in data1:
+            tree1.insert("", "end", values=row)
+
+        # Add the first Treeview to the frame
+        tree1.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        # Second Treeview
+        tree2_frame = tk.Frame(match_players_frame)
+        tree2_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree2_frame, text="Guest Team").pack()
+        tree2 = ttk.Treeview(match_players_frame, height=11, columns=["First Name", "Last Name", "Position"], show="headings")
+
+        # Set up columns
+        for field in ["First Name", "Last Name", "Position"]:
+            tree2.heading(field, text=field)
+            tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the second tree
+        # Add your second SQL query to fetch different data if needed
+        cursor.execute(f"SELECT DISTINCT\
+                            p.FirstName, \
+                            p.LastName, \
+                            p.Position \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            Plays ps \
+                        ON \
+                            t.TeamID = ps.GuestTeamID \
+                        WHERE \
+                            ps.MatchID = {match_id}\
+                        ORDER BY \
+                            p.LastName,p.FirstName"
+                       )
+        data2 = cursor.fetchall()
+        for row in data2:
+            tree2.insert("", "end", values=row)
+
+        # Add the second Treeview to the frame
+        tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        back_button = tk.Button(match_players_frame, text="Back", command=self.user_group_matches_page)
         back_button.pack(pady=10)
 
     def user_page_knockout_stage(self):
@@ -600,8 +1084,9 @@ class SportsDatabaseGUI:
             goals_label = tk.Label(inner_frame, text=row[4])
             goals_label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
 
-            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id: self.admin_show_player_details(pid, 
-                                                                                                                            player_info))
+            button = tk.Button(inner_frame, text="View Stats", command=lambda pid=player_id, pinfo=player_info: 
+                                                                                                self.admin_show_player_details(pid, 
+                                                                                                                               pinfo))
             button.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
 
         back_button = tk.Button(page_beta_frame, text="Back", command=self.admin_home_page)
@@ -718,7 +1203,7 @@ class SportsDatabaseGUI:
         tree2_frame = tk.Frame(group_stage_frame)
         tree2_frame.pack(side=tk.TOP, padx=10)
 
-        ttk.Label(tree2_frame, text="Goup B").pack()
+        ttk.Label(tree2_frame, text="Group B").pack()
         tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
 
         # Set up columns
@@ -760,7 +1245,231 @@ class SportsDatabaseGUI:
         # Add the second Treeview to the frame
         tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
 
+        match_button = tk.Button(group_stage_frame, text="Matches", command=self.admin_group_matches_page)
+        match_button.pack(pady=10)
+
         back_button = tk.Button(group_stage_frame, text="Back", command=self.admin_home_page)
+        back_button.pack(pady=10)
+
+    def admin_group_matches_page(self):
+        self.clear_screen()
+
+        match_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        match_frame.pack_propagate(False)
+        match_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        ttk.Label(match_frame, text="Welcome to Local Championship").pack(pady=10)
+
+        cursor.execute("SELECT MatchID, Date, Time, CourtID, Phase, t.TeamName as HomeTeam, ts.TeamName as GuestTeam \
+                       FROM \
+                       (SELECT * \
+                       FROM \
+                       (SELECT *\
+                        FROM Match \
+                        WHERE Phase='Group A') as m \
+                        JOIN Plays as p \
+                        ON p.MatchID = m.MatchID) as pl\
+                       JOIN Team as t \
+                       ON t.TeamID = pl.HomeTeamID \
+                       JOIN Team as ts \
+                       ON ts.TeamID = pl.GuestTeamID")
+
+        data1 = cursor.fetchall()
+
+        cursor.execute("SELECT MatchID, Date, Time, CourtID, Phase, t.TeamName as HomeTeam, ts.TeamName as GuestTeam \
+                       FROM \
+                       (SELECT * \
+                       FROM \
+                       (SELECT *\
+                        FROM Match \
+                        WHERE Phase='Group B') as m \
+                        JOIN Plays as p \
+                        ON p.MatchID = m.MatchID) as pl\
+                       JOIN Team as t \
+                       ON t.TeamID = pl.HomeTeamID \
+                       JOIN Team as ts \
+                       ON ts.TeamID = pl.GuestTeamID")
+
+        data2 = cursor.fetchall()
+
+        ttk.Label(match_frame, text="Matches of Groups").pack()
+
+        # Create a scrollable frame
+        scrollable_frame = tk.Frame(match_frame)
+        scrollable_frame.pack(side=tk.TOP, padx=10)
+
+        canvas = tk.Canvas(scrollable_frame, width=700)
+        canvas.pack(side=tk.LEFT, fill=tk.Y, expand=True)
+
+        scrollbar = tk.Scrollbar(scrollable_frame, orient=tk.VERTICAL, command=canvas.yview)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        inner_frame = tk.Frame(canvas)
+        canvas.create_window((0, 0), window=inner_frame, anchor=tk.NW)
+
+        # Add column names
+        entity_fields = self.get_entity_fields('Match')
+        entity_fields.append("Home Team")
+        entity_fields.append("Guest Team")
+        for col, name in enumerate(entity_fields):
+            label = tk.Label(inner_frame, text=name, font=("Helvetica", 10, "bold"))
+            label.grid(row=0, column=col, padx=10, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data1, start=1):
+            match_id = row[0]
+            label = tk.Label(inner_frame, text=match_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda mid=match_id: self.admin_show_players_in_match(mid))
+            button.grid(row=row_idx, column=7, padx=30, pady=5, sticky="w")
+
+        for row_idx, row in enumerate(data2, start=len(data1) + 1):
+            match_id = row[0]
+            label = tk.Label(inner_frame, text=match_id)
+            label.grid(row=row_idx, column=0, padx=30, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[1])
+            label.grid(row=row_idx, column=1, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[2])
+            label.grid(row=row_idx, column=2, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[3])
+            label.grid(row=row_idx, column=3, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[4])
+            label.grid(row=row_idx, column=4, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[5])
+            label.grid(row=row_idx, column=5, padx=10, pady=5, sticky="w")
+
+            label = tk.Label(inner_frame, text=row[6])
+            label.grid(row=row_idx, column=6, padx=10, pady=5, sticky="w")
+
+            button = tk.Button(inner_frame, text="Players", command=lambda mid=match_id: self.admin_show_players_in_match(mid))
+            button.grid(row=row_idx, column=7, padx=30, pady=5, sticky="w")
+
+        # Bind the canvas to the mousewheel for scrolling
+        canvas.bind_all("<MouseWheel>", lambda event: self.on_mousewheel(event, canvas))
+        canvas.bind("<Configure>", lambda event: self.update_scrollregion(event, canvas))
+
+        canvas.focus_set()
+
+        back_button = tk.Button(match_frame, text="Back", command=self.admin_page_group_stage)
+        back_button.pack(pady=10)
+
+    def admin_show_players_in_match(self, match_id):
+        self.clear_screen()
+
+        match_players_frame = tk.Frame(self.root, bg="#3498db", width=1400, height=800)
+        match_players_frame.pack_propagate(False)
+        match_players_frame.pack(padx=20, pady=20)
+
+        self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
+        self.set_style("TButton", "#2ecc71", "white", 12)  # Larger button style
+        ttk.Label(match_players_frame, text=f"Match {match_id}").pack(pady=10)
+
+        # First Treeview
+        tree1_frame = tk.Frame(match_players_frame)  # Set the height here
+        tree1_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree1_frame, text="Home Team").pack()
+        tree1 = ttk.Treeview(match_players_frame, height=11, columns=["First Name", "Last Name", "Position"], show="headings")
+
+        # Set up columns
+        for field in ["First Name", "Last Name", "Position"]:
+            tree1.heading(field, text=field)
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the first tree
+        cursor.execute(f"SELECT DISTINCT\
+                            p.FirstName, \
+                            p.LastName, \
+                            p.Position \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            Plays ps \
+                        ON \
+                            t.TeamID = ps.HomeTeamID \
+                        WHERE \
+                            ps.MatchID = {match_id}\
+                        ORDER BY \
+                            p.LastName,p.FirstName"
+                       )
+        data1 = cursor.fetchall()
+        for row in data1:
+            tree1.insert("", "end", values=row)
+
+        # Add the first Treeview to the frame
+        tree1.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        # Second Treeview
+        tree2_frame = tk.Frame(match_players_frame)
+        tree2_frame.pack(side=tk.TOP, padx=10)
+
+        ttk.Label(tree2_frame, text="Guest Team").pack()
+        tree2 = ttk.Treeview(match_players_frame, height=11, columns=["First Name", "Last Name", "Position"], show="headings")
+
+        # Set up columns
+        for field in ["First Name", "Last Name", "Position"]:
+            tree2.heading(field, text=field)
+            tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+
+        # Fetch and insert data for the second tree
+        # Add your second SQL query to fetch different data if needed
+        cursor.execute(f"SELECT DISTINCT\
+                            p.FirstName, \
+                            p.LastName, \
+                            p.Position \
+                        FROM \
+                            Player p \
+                        JOIN \
+                            Team t \
+                        ON \
+                            t.TeamID = p.TeamID \
+                        JOIN \
+                            Plays ps \
+                        ON \
+                            t.TeamID = ps.GuestTeamID \
+                        WHERE \
+                            ps.MatchID = {match_id}\
+                        ORDER BY \
+                            p.LastName,p.FirstName"
+                       )
+        data2 = cursor.fetchall()
+        for row in data2:
+            tree2.insert("", "end", values=row)
+
+        # Add the second Treeview to the frame
+        tree2.pack(side=tk.TOP, fill=tk.BOTH, padx=10)
+
+        back_button = tk.Button(match_players_frame, text="Back", command=self.admin_group_matches_page)
         back_button.pack(pady=10)
 
     def admin_page_knockout_stage(self):
@@ -964,11 +1673,11 @@ class SportsDatabaseGUI:
             "Championship": ["ChampionshipID", "ChampionshipName", "StartDate", "EndDate", "Description"],
             "Team": ["TeamID", "TeamName", "TeamFoundedDate", "TeamCoachFname", "TeamCoachLname", "CourtOwnedID", "ChampionshipID"],
             "Referee": ["RefereeID", "FirstName", "LastName", "Experience"],
-            "Match": ["MatchID", "Date", "Time", "CourtID"],
+            "Match": ["MatchID", "Date", "Time", "CourtID", "Phase"],
             "Plays": ["HomeTeamID", "GuestTeamID", "MatchID"],
             "Includes": ["ChampionshipID", "MatchID"],
             "Referees": ["RefereeID", "MatchID"],
-            "Player": ["PlayerID", "FirstName", "LastName", "DateOfBirth", "Nationality", "Height", "Weight", "Position", "TeamID", "JerseyNumber", "MatchID"],
+            "Player": ["PlayerID", "FirstName", "LastName", "DateOfBirth", "Nationality", "Height", "Weight", "Position", "TeamID", "JerseyNumber"],
             "PlayerStats": ["PlayerID", "MatchID", "MinutesPlayed", "RedCards", "YellowCards", "GoalsScored", "Shots", "ShotsOnTarget", "Passes", "Assists", "Offsides", "Tackles"],
             "Position": ["PlayerID", "Position"]
             # Add fields for other entities

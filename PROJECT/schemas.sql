@@ -57,6 +57,15 @@ CREATE TABLE Plays (
     FOREIGN KEY (MatchID) REFERENCES Match(MatchID)
 );
 
+-- Create Plays table
+CREATE TABLE CompetesIn (
+    PlayerID INT,
+    MatchID INT,
+    PRIMARY KEY (PlayerID, MatchID),
+    FOREIGN KEY (PlayerID) REFERENCES Player(PlayerID),
+    FOREIGN KEY (MatchID) REFERENCES Match(MatchID)
+);
+
 -- Create Includes table
 CREATE TABLE Includes (
     ChampionshipID INT,
@@ -87,9 +96,7 @@ CREATE TABLE Player (
     Position VARCHAR(255),
     TeamID INT,
     JerseyNumber INT,
-    MatchID INT,
-    FOREIGN KEY (TeamID) REFERENCES Team(TeamID),
-    FOREIGN KEY (MatchID) REFERENCES Match(MatchID)
+    FOREIGN KEY (TeamID) REFERENCES Team(TeamID)
 );
 
 -- Create PlayerStats table
