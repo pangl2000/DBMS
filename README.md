@@ -35,7 +35,7 @@ ALL USER FEATURES +
 
 ## Installation
 
-Download the files. If you don't download the Local_Championship.db file, then you need to run first the python file createDB.py. Then you need to install DB browser for SQLite, open the Local_Championship.db
+Download the files. If you don't download the Local_Championship.db file, then you need to run first the python file createDB.py. Then you need to install [DB browser for SQLite](https://sqlitebrowser.org/dl/), open the Local_Championship.db
 file created by createDB.py, copy the SQL code from insert.sql to the execute SQL tab and run. Afterwards, you can open the modernDatabaseGUI.py and run it.
 
 ## Usage
