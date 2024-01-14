@@ -541,46 +541,114 @@ class SportsDatabaseGUI:
         self.set_style("TButton", "#2ecc71", "white", 12)  # Larger button style
         ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
 
+        wins = []
+        for i in range(1,25):
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.HomeTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            homeTeamGoals = cursor.fetchall()
+
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.GuestTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            guestTeamGoals = cursor.fetchall()
+            if(homeTeamGoals[0][1] > guestTeamGoals[0][1]): wins.append((homeTeamGoals[0][0],i))
+            elif(homeTeamGoals[0][1] < guestTeamGoals[0][1]): wins.append((guestTeamGoals[0][0],i))
+            else: wins.append((0,0,i))
+
+        cursor.execute("SELECT \
+                            t.TeamName \
+                        FROM \
+                            Team as t \
+                        ORDER BY \
+                            t.TeamID")
+        teamNames = cursor.fetchall()
+        ranking = []
+        for j in range(1,9):
+            ranking.append([j,teamNames[j-1][0],0])
+            for i in range(1,25):
+                if(wins[i-1][0] == j): ranking[j-1][2] = ranking[j-1][2]+1
+        
+        groupa = []
+        groupb = []
+        for i in range(0,8):
+            if (ranking[i][0] < 5): groupa.append(ranking[i]) 
+            elif (ranking[i][0] >= 5): groupb.append(ranking[i])
+        
+        groupa.sort(key=lambda x: x[2], reverse=True)
+        groupb.sort(key=lambda x: x[2], reverse=True)
+        
         # First Treeview
         tree1_frame = tk.Frame(group_stage_frame)
         tree1_frame.pack(side=tk.TOP, padx=10)
 
         ttk.Label(tree1_frame, text="Group A").pack()
-        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Wins"], show="headings")
 
         # Set up columns
-        for field in ["TeamID", "Team Name", "Goals Scored"]:
+        for field in ["TeamID", "Team Name", "Wins"]:
             tree1.heading(field, text=field)
-            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed 
 
-        # Fetch and insert data for the first tree
-        cursor.execute("SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group A' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC" \
-                       )
-        data1 = cursor.fetchall()
-        for row in data1:
+        for row in groupa:
             tree1.insert("", "end", values=row)
 
         # Add the first Treeview to the frame
@@ -591,42 +659,14 @@ class SportsDatabaseGUI:
         tree2_frame.pack(side=tk.TOP, padx=10)
 
         ttk.Label(tree2_frame, text="Group B").pack()
-        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Wins"], show="headings")
 
         # Set up columns
-        for field in ["TeamID", "Team Name", "Goals Scored"]:
+        for field in ["TeamID", "Team Name", "Wins"]:
             tree2.heading(field, text=field)
             tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
-
-        # Fetch and insert data for the second tree
-        # Add your second SQL query to fetch different data if needed
-        cursor.execute("SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group B' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC" \
-                       )
-        data2 = cursor.fetchall()
-        for row in data2:
+        
+        for row in groupb:
             tree2.insert("", "end", values=row)
 
         # Add the second Treeview to the frame
@@ -869,69 +909,106 @@ class SportsDatabaseGUI:
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
 
-        cursor.execute("SELECT TeamName \
-                       FROM \
-                       (SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group A' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC)" \
-                       )
-        data1 = cursor.fetchall()
+        wins = []
+        for i in range(1,25):
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.HomeTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            homeTeamGoals = cursor.fetchall()
 
-        cursor.execute("SELECT TeamName \
-                       FROM \
-                       (SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.GuestTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            guestTeamGoals = cursor.fetchall()
+            if(homeTeamGoals[0][1] > guestTeamGoals[0][1]): wins.append((homeTeamGoals[0][0],i))
+            elif(homeTeamGoals[0][1] < guestTeamGoals[0][1]): wins.append((guestTeamGoals[0][0],i))
+            else: wins.append((0,0,i))
+
+        cursor.execute("SELECT \
+                            t.TeamName \
                         FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group B' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
+                            Team as t \
                         ORDER BY \
-                            TotalGoalsScored DESC)" \
-                       )
-        data2 = cursor.fetchall()
+                            t.TeamID")
+        teamNames = cursor.fetchall()
+        ranking = []
+        for j in range(1,9):
+            ranking.append([j,teamNames[j-1][0],0])
+            for i in range(1,25):
+                if(wins[i-1][0] == j): ranking[j-1][2] = ranking[j-1][2]+1
+        
+        groupa = []
+        groupb = []
+        for i in range(0,8):
+            if (ranking[i][0] < 5): groupa.append(ranking[i]) 
+            elif (ranking[i][0] >= 5): groupb.append(ranking[i])
+        
+        groupa.sort(key=lambda x: x[2], reverse=True)
+        groupb.sort(key=lambda x: x[2], reverse=True)
 
         knockoutsTeams = []
-        knockoutsTeams.append(data1[0][0])
-        knockoutsTeams.append(data2[1][0])
-        knockoutsTeams.append(data2[0][0])
-        knockoutsTeams.append(data1[1][0])
+        knockoutsTeams.append(groupa[0][1])
+        knockoutsTeams.append(groupb[1][1])
+        knockoutsTeams.append(groupb[0][1])
+        knockoutsTeams.append(groupa[1][1])
 
         # Display the bracket
         bracket_canvas = tk.Canvas(knockout_stage_frame, width=800, height=400, bg="white")
@@ -1154,46 +1231,114 @@ class SportsDatabaseGUI:
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(group_stage_frame, text="Group Stage Information").pack(pady=10)
 
+        wins = []
+        for i in range(1,25):
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.HomeTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            homeTeamGoals = cursor.fetchall()
+
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.GuestTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            guestTeamGoals = cursor.fetchall()
+            if(homeTeamGoals[0][1] > guestTeamGoals[0][1]): wins.append((homeTeamGoals[0][0],i))
+            elif(homeTeamGoals[0][1] < guestTeamGoals[0][1]): wins.append((guestTeamGoals[0][0],i))
+            else: wins.append((0,0,i))
+
+        cursor.execute("SELECT \
+                            t.TeamName \
+                        FROM \
+                            Team as t \
+                        ORDER BY \
+                            t.TeamID")
+        teamNames = cursor.fetchall()
+        ranking = []
+        for j in range(1,9):
+            ranking.append([j,teamNames[j-1][0],0])
+            for i in range(1,25):
+                if(wins[i-1][0] == j): ranking[j-1][2] = ranking[j-1][2]+1
+        
+        groupa = []
+        groupb = []
+        for i in range(0,8):
+            if (ranking[i][0] < 5): groupa.append(ranking[i]) 
+            elif (ranking[i][0] >= 5): groupb.append(ranking[i])
+        
+        groupa.sort(key=lambda x: x[2], reverse=True)
+        groupb.sort(key=lambda x: x[2], reverse=True)
+        
         # First Treeview
         tree1_frame = tk.Frame(group_stage_frame)
         tree1_frame.pack(side=tk.TOP, padx=10)
 
         ttk.Label(tree1_frame, text="Group A").pack()
-        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+        tree1 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Wins"], show="headings")
 
         # Set up columns
-        for field in ["TeamID", "Team Name", "Goals Scored"]:
+        for field in ["TeamID", "Team Name", "Wins"]:
             tree1.heading(field, text=field)
-            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
+            tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed 
 
-        # Fetch and insert data for the first tree
-        cursor.execute("SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group A' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC" \
-                       )
-        data1 = cursor.fetchall()
-        for row in data1:
+        for row in groupa:
             tree1.insert("", "end", values=row)
 
         # Add the first Treeview to the frame
@@ -1204,42 +1349,14 @@ class SportsDatabaseGUI:
         tree2_frame.pack(side=tk.TOP, padx=10)
 
         ttk.Label(tree2_frame, text="Group B").pack()
-        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Goals Scored"], show="headings")
+        tree2 = ttk.Treeview(group_stage_frame, columns=["TeamID", "Team Name", "Wins"], show="headings")
 
         # Set up columns
-        for field in ["TeamID", "Team Name", "Goals Scored"]:
+        for field in ["TeamID", "Team Name", "Wins"]:
             tree2.heading(field, text=field)
             tree2.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
-
-        # Fetch and insert data for the second tree
-        # Add your second SQL query to fetch different data if needed
-        cursor.execute("SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group B' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC" \
-                       )
-        data2 = cursor.fetchall()
-        for row in data2:
+        
+        for row in groupb:
             tree2.insert("", "end", values=row)
 
         # Add the second Treeview to the frame
@@ -1482,69 +1599,106 @@ class SportsDatabaseGUI:
         self.set_style("TLabel", "#3498db", "white", 14)  # Larger label style
         ttk.Label(knockout_stage_frame, text="Knockout Stage Information").pack(pady=10)
 
-        cursor.execute("SELECT TeamName \
-                       FROM \
-                       (SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
-                        FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group A' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
-                        ORDER BY \
-                            TotalGoalsScored DESC)" \
-                       )
-        data1 = cursor.fetchall()
+        wins = []
+        for i in range(1,25):
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.HomeTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            homeTeamGoals = cursor.fetchall()
 
-        cursor.execute("SELECT TeamName \
-                       FROM \
-                       (SELECT \
-                            t.TeamID, \
-                            t.TeamName, \
-                            SUM(ps.GoalsScored) AS TotalGoalsScored \
+            cursor.execute(f"SELECT \
+                                ts.TeamID, SUM(ts.GoalsScored) \
+                            FROM \
+                                (SELECT \
+                                    p.FirstName, t.TeamID, ps.GoalsScored \
+                                FROM \
+                                    Team as t \
+                                JOIN \
+                                    Plays as pl \
+                                ON \
+                                    pl.MatchID = '{i}' \
+                                AND \
+                                    pl.GuestTeamID = t.TeamID \
+                                JOIN \
+                                    Player as p \
+                                ON \
+                                    p.TeamID = t.TeamID \
+                                JOIN \
+                                    CompetesIn as c \
+                                ON \
+                                    c.PlayerID = p.PlayerID \
+                                AND \
+                                    c.MatchID = '{i}' \
+                                JOIN \
+                                    PlayerStats as ps \
+                                ON \
+                                    ps.PlayerID = p.PlayerID \
+                                AND \
+                                    ps.MatchID = '{i}') as ts \
+                            GROUP BY \
+                                ts.TeamID"
+                            )
+            guestTeamGoals = cursor.fetchall()
+            if(homeTeamGoals[0][1] > guestTeamGoals[0][1]): wins.append((homeTeamGoals[0][0],i))
+            elif(homeTeamGoals[0][1] < guestTeamGoals[0][1]): wins.append((guestTeamGoals[0][0],i))
+            else: wins.append((0,0,i))
+
+        cursor.execute("SELECT \
+                            t.TeamName \
                         FROM \
-                            Team t \
-                        JOIN \
-                            Player p \
-                        ON \
-                            t.TeamID = p.TeamID \
-                        JOIN \
-                            PlayerStats ps \
-                        ON \
-                            p.PlayerID = ps.PlayerID \
-                        JOIN \
-                            Match m \
-                        ON \
-                            m.MatchID = ps.MatchID \
-                        WHERE \
-                            m.Phase = 'Group B' \
-                        GROUP BY \
-                            t.TeamID, t.TeamName \
+                            Team as t \
                         ORDER BY \
-                            TotalGoalsScored DESC)" \
-                       )
-        data2 = cursor.fetchall()
+                            t.TeamID")
+        teamNames = cursor.fetchall()
+        ranking = []
+        for j in range(1,9):
+            ranking.append([j,teamNames[j-1][0],0])
+            for i in range(1,25):
+                if(wins[i-1][0] == j): ranking[j-1][2] = ranking[j-1][2]+1
+        
+        groupa = []
+        groupb = []
+        for i in range(0,8):
+            if (ranking[i][0] < 5): groupa.append(ranking[i]) 
+            elif (ranking[i][0] >= 5): groupb.append(ranking[i])
+        
+        groupa.sort(key=lambda x: x[2], reverse=True)
+        groupb.sort(key=lambda x: x[2], reverse=True)
 
         knockoutsTeams = []
-        knockoutsTeams.append(data1[0][0])
-        knockoutsTeams.append(data2[1][0])
-        knockoutsTeams.append(data2[0][0])
-        knockoutsTeams.append(data1[1][0])
+        knockoutsTeams.append(groupa[0][1])
+        knockoutsTeams.append(groupb[1][1])
+        knockoutsTeams.append(groupb[0][1])
+        knockoutsTeams.append(groupa[1][1])
         
         # Display the bracket
         bracket_canvas = tk.Canvas(knockout_stage_frame, width=800, height=400, bg="white")
