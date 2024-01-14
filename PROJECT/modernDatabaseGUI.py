@@ -440,7 +440,7 @@ class SportsDatabaseGUI:
                             GROUP BY ps.playerID \
                             ) as pss on pss.PlayerID = p.PlayerID \
                         ORDER BY \
-                            pss.GOALS DESC;")
+                            pss.GOALS DESC")
 
         data = cursor.fetchall()
         # Create a scrollable frame
@@ -561,12 +561,6 @@ class SportsDatabaseGUI:
                                 ON \
                                     p.TeamID = t.TeamID \
                                 JOIN \
-                                    CompetesIn as c \
-                                ON \
-                                    c.PlayerID = p.PlayerID \
-                                AND \
-                                    c.MatchID = '{i}' \
-                                JOIN \
                                     PlayerStats as ps \
                                 ON \
                                     ps.PlayerID = p.PlayerID \
@@ -594,12 +588,6 @@ class SportsDatabaseGUI:
                                     Player as p \
                                 ON \
                                     p.TeamID = t.TeamID \
-                                JOIN \
-                                    CompetesIn as c \
-                                ON \
-                                    c.PlayerID = p.PlayerID \
-                                AND \
-                                    c.MatchID = '{i}' \
                                 JOIN \
                                     PlayerStats as ps \
                                 ON \
@@ -957,12 +945,6 @@ class SportsDatabaseGUI:
                                 ON \
                                     p.TeamID = t.TeamID \
                                 JOIN \
-                                    CompetesIn as c \
-                                ON \
-                                    c.PlayerID = p.PlayerID \
-                                AND \
-                                    c.MatchID = '{i}' \
-                                JOIN \
                                     PlayerStats as ps \
                                 ON \
                                     ps.PlayerID = p.PlayerID \
@@ -990,12 +972,6 @@ class SportsDatabaseGUI:
                                     Player as p \
                                 ON \
                                     p.TeamID = t.TeamID \
-                                JOIN \
-                                    CompetesIn as c \
-                                ON \
-                                    c.PlayerID = p.PlayerID \
-                                AND \
-                                    c.MatchID = '{i}' \
                                 JOIN \
                                     PlayerStats as ps \
                                 ON \
