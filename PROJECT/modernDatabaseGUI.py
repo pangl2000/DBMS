@@ -830,24 +830,38 @@ class SportsDatabaseGUI:
             tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
 
         # Fetch and insert data for the first tree
-        cursor.execute(f"SELECT DISTINCT\
-                            p.FirstName, \
-                            p.LastName, \
-                            p.Position \
+        cursor.execute(f"SELECT \
+                            p2.FirstName, \
+                            p2.LastName, \
+                            p2.Position \
                         FROM \
-                            Player p \
+                            (SELECT \
+                                p.PlayerID, \
+                                p.FirstName, \
+                                p.LastName, \
+                                p.TeamID, \
+                                p.Position \
+                            FROM \
+                                Player as p \
+                            JOIN \
+                                PlayerStats as ps \
+                            ON \
+                                ps.MatchID = {match_id} \
+                            AND \
+                                ps.PlayerID = p.PlayerID \
+                            ) as p2 \
                         JOIN \
-                            Team t \
+                            Team as t \
                         ON \
-                            t.TeamID = p.TeamID \
+                            t.TeamID = p2.TeamID \
                         JOIN \
-                            Plays ps \
+                            Plays as pl \
                         ON \
-                            t.TeamID = ps.HomeTeamID \
-                        WHERE \
-                            ps.MatchID = {match_id}\
+                            pl.HomeTeamID = t.TeamID \
+                        AND \
+                            pl.MatchID = {match_id} \
                         ORDER BY \
-                            p.LastName,p.FirstName"
+                            p2.LastName,p2.FirstName"
                        )
         data1 = cursor.fetchall()
         for row in data1:
@@ -870,24 +884,38 @@ class SportsDatabaseGUI:
 
         # Fetch and insert data for the second tree
         # Add your second SQL query to fetch different data if needed
-        cursor.execute(f"SELECT DISTINCT\
-                            p.FirstName, \
-                            p.LastName, \
-                            p.Position \
+        cursor.execute(f"SELECT \
+                            p2.FirstName, \
+                            p2.LastName, \
+                            p2.Position \
                         FROM \
-                            Player p \
+                            (SELECT \
+                                p.PlayerID, \
+                                p.FirstName, \
+                                p.LastName, \
+                                p.TeamID, \
+                                p.Position \
+                            FROM \
+                                Player as p \
+                            JOIN \
+                                PlayerStats as ps \
+                            ON \
+                                ps.MatchID = {match_id} \
+                            AND \
+                                ps.PlayerID = p.PlayerID \
+                            ) as p2 \
                         JOIN \
-                            Team t \
+                            Team as t \
                         ON \
-                            t.TeamID = p.TeamID \
+                            t.TeamID = p2.TeamID \
                         JOIN \
-                            Plays ps \
+                            Plays as pl \
                         ON \
-                            t.TeamID = ps.GuestTeamID \
-                        WHERE \
-                            ps.MatchID = {match_id}\
+                            pl.GuestTeamID = t.TeamID \
+                        AND \
+                            pl.MatchID = {match_id} \
                         ORDER BY \
-                            p.LastName,p.FirstName"
+                            p2.LastName,p2.FirstName"
                        )
         data2 = cursor.fetchall()
         for row in data2:
@@ -1520,24 +1548,38 @@ class SportsDatabaseGUI:
             tree1.column(field, width=100, anchor=tk.CENTER)  # Adjust the width as needed
 
         # Fetch and insert data for the first tree
-        cursor.execute(f"SELECT DISTINCT\
-                            p.FirstName, \
-                            p.LastName, \
-                            p.Position \
+        cursor.execute(f"SELECT \
+                            p2.FirstName, \
+                            p2.LastName, \
+                            p2.Position \
                         FROM \
-                            Player p \
+                            (SELECT \
+                                p.PlayerID, \
+                                p.FirstName, \
+                                p.LastName, \
+                                p.TeamID, \
+                                p.Position \
+                            FROM \
+                                Player as p \
+                            JOIN \
+                                PlayerStats as ps \
+                            ON \
+                                ps.MatchID = {match_id} \
+                            AND \
+                                ps.PlayerID = p.PlayerID \
+                            ) as p2 \
                         JOIN \
-                            Team t \
+                            Team as t \
                         ON \
-                            t.TeamID = p.TeamID \
+                            t.TeamID = p2.TeamID \
                         JOIN \
-                            Plays ps \
+                            Plays as pl \
                         ON \
-                            t.TeamID = ps.HomeTeamID \
-                        WHERE \
-                            ps.MatchID = {match_id}\
+                            pl.HomeTeamID = t.TeamID \
+                        AND \
+                            pl.MatchID = {match_id} \
                         ORDER BY \
-                            p.LastName,p.FirstName"
+                            p2.LastName,p2.FirstName"
                        )
         data1 = cursor.fetchall()
         for row in data1:
@@ -1560,24 +1602,38 @@ class SportsDatabaseGUI:
 
         # Fetch and insert data for the second tree
         # Add your second SQL query to fetch different data if needed
-        cursor.execute(f"SELECT DISTINCT\
-                            p.FirstName, \
-                            p.LastName, \
-                            p.Position \
+        cursor.execute(f"SELECT \
+                            p2.FirstName, \
+                            p2.LastName, \
+                            p2.Position \
                         FROM \
-                            Player p \
+                            (SELECT \
+                                p.PlayerID, \
+                                p.FirstName, \
+                                p.LastName, \
+                                p.TeamID, \
+                                p.Position \
+                            FROM \
+                                Player as p \
+                            JOIN \
+                                PlayerStats as ps \
+                            ON \
+                                ps.MatchID = {match_id} \
+                            AND \
+                                ps.PlayerID = p.PlayerID \
+                            ) as p2 \
                         JOIN \
-                            Team t \
+                            Team as t \
                         ON \
-                            t.TeamID = p.TeamID \
+                            t.TeamID = p2.TeamID \
                         JOIN \
-                            Plays ps \
+                            Plays as pl \
                         ON \
-                            t.TeamID = ps.GuestTeamID \
-                        WHERE \
-                            ps.MatchID = {match_id}\
+                            pl.GuestTeamID = t.TeamID \
+                        AND \
+                            pl.MatchID = {match_id} \
                         ORDER BY \
-                            p.LastName,p.FirstName"
+                            p2.LastName,p2.FirstName"
                        )
         data2 = cursor.fetchall()
         for row in data2:
